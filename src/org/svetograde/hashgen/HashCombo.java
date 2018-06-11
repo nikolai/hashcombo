@@ -14,7 +14,7 @@ import static javax.xml.bind.DatatypeConverter.printHexBinary;
 
 public class HashCombo {
 
-    static ThreadLocal<Map<String, MessageDigest>> algosTLocal = new ThreadLocal<>();
+    private static ThreadLocal<Map<String, MessageDigest>> algosTLocal = new ThreadLocal<>();
 
     private static MessageDigest getAlgo(String algoName) {
         Map<String, MessageDigest> algosMap = algosTLocal.get();
@@ -30,7 +30,7 @@ public class HashCombo {
         return algo;
     }
 
-    static MessageDigest createAlgo(String algoName) {
+    private static MessageDigest createAlgo(String algoName) {
         try {
             return MessageDigest.getInstance(algoName);
         } catch (NoSuchAlgorithmException e) {
@@ -46,7 +46,7 @@ public class HashCombo {
         }
     }
 
-    static String getValue(List<String> args, String key, boolean mandatory) {
+    private static String getValue(List<String> args, String key, boolean mandatory) {
         for (String arg : args) {
             if(arg.startsWith(key)) {
                 String[] split = arg.split("=");
@@ -65,7 +65,7 @@ public class HashCombo {
         List<String> argsList;
 
         if (args == null || args.length == 0
-                || !(argsList = new ArrayList(Arrays.asList(args))).retainAll(Arrays.asList("-h", "--help", "help", "/?"))
+                || !(argsList = new ArrayList<>(Arrays.asList(args))).retainAll(Arrays.asList("-h", "--help", "help", "/?"))
                 || !argsList.isEmpty()
                 ) {
             System.out.println("Usage: <STDIN> | --algo-combo=<algorithms combination> [--target-hash=<hex>]" +
@@ -76,7 +76,8 @@ public class HashCombo {
         argsList = Arrays.asList(args);
 
         String algoCombi = getValue(argsList, "--algo-combo", true);
-        List<String> algoList = Arrays.asList(algoCombi.split(","));
+        assert algoCombi != null;
+        String[] algoList = algoCombi.split(",");
 
         String ethalon = getValue(argsList, "--target-hash", false);
         final byte[] ethalonBytes = ethalon == null ? null : parseHexBinary(ethalon);
@@ -98,7 +99,7 @@ public class HashCombo {
                             if (aCount % 100000000 == 0) {
                                 System.out.println("progress: "
                                         + " current password: " + pwd
-                                        + ", tries: " + aCount
+                                        + ", tries: " + (aCount/1000000) + "M"
                                         + ", seconds spent: " + (System.currentTimeMillis() - start)/1000
                                 );
                             }
